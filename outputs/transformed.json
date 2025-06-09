@@ -1,0 +1,58 @@
+{
+  "activity": {
+    "devices": [
+      {
+        "device_id": "dev123456",
+        "os_version": "13.0",
+        "type": "Android"
+      },
+      {
+        "device_id": "dev789101",
+        "os_version": "Windows 11",
+        "type": "Laptop"
+      }
+    ],
+    "last_login": "2025-06-01T09:22:34Z"
+  },
+  "contact": {
+    "email": "neha.verma93@gmail.com",
+    "emergency_contacts": [
+      {
+        "name": "Rakesh Verma",
+        "phone": "+91 9876543210",
+        "relation": "father"
+      },
+      {
+        "name": "Anita Verma",
+        "phone": "+91 9123456789",
+        "relation": "mother"
+      }
+    ],
+    "phone": {
+      "country_code": "+91",
+      "number": "9823412345"
+    }
+  },
+  "meta": {
+    "created_at": "2020-01-01T12:00:00Z",
+    "updated_at": "2025-05-30T18:11:45Z"
+  },
+  "preferences": {
+    "language": "Hindi",
+    "newsletter": true,
+    "notifications": {
+      "email": true,
+      "sms": false
+    }
+  },
+  "profile": {
+    "dob": "1993-08-12",
+    "gender": "female",
+    "name": {
+      "first": "Neha",
+      "last": "Verma",
+      "middle": "Raj"
+    },
+    "user_id": 847362
+  }
+}

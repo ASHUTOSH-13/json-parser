@@ -1,0 +1,68 @@
+{
+  "profile": {
+    "user_id": 847362,
+    "name": {
+      "first": "Neha",
+      "middle": "Raj",
+      "last": "Verma"
+    },
+    "dob": "1993-08-12",
+    "gender": "female"
+  },
+  "contact": {
+    "email": "neha.verma93@gmail.com",
+    "phone": {
+      "country_code": "+91",
+      "number": "9823412345"
+    },
+    "emergency_contacts": [
+      {
+        "name": "Rakesh Verma",
+        "relation": "father",
+        "phone": "+91 9876543210"
+      },
+      {
+        "name": "Anita Verma",
+        "relation": "mother",
+        "phone": "+91 9123456789"
+      }
+    ]
+  },
+  "employment": {
+    "company": "TechVista Solutions",
+    "designation": "Software Engineer",
+    "joining_date": "2020-02-17",
+    "location": {
+      "city": "Pune",
+      "state": "Maharashtra",
+      "pincode": "411045"
+    }
+  },
+  "preferences": {
+    "language": "Hindi",
+    "notifications": {
+      "email": true,
+      "sms": false
+    },
+    "newsletter": true
+  },
+  "activity": {
+    "last_login": "2025-06-01T09:22:34Z",
+    "devices": [
+      {
+        "device_id": "dev123456",
+        "type": "Android",
+        "os_version": "13.0"
+      },
+      {
+        "device_id": "dev789101",
+        "type": "Laptop",
+        "os_version": "Windows 11"
+      }
+    ]
+  },
+  "meta": {
+    "created_at": "2020-01-01T12:00:00Z",
+    "updated_at": "2025-05-30T18:11:45Z"
+  }
+}

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JSON AI Transformer</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --background-color: #f8fafc;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+            --success-color: #059669;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        h1, h2, h3 {
+            color: var(--text-color);
+            margin-bottom: 1.5rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--primary-color);
+        }
+
+        .section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: white;
+        }
+
+        .upload-section {
+            text-align: center;
+        }
+
+        .file-input-wrapper {
+            margin: 1rem 0;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .file-input-label:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .selected-file {
+            margin-top: 0.5rem;
+            color: var(--text-color);
+            font-size: 0.9rem;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            resize: vertical;
+            min-height: 120px;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .fields-list {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .fields-list li {
+            background-color: var(--background-color);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .preview-section {
+            background-color: #1e1e1e;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .preview-section pre {
+            color: #d4d4d4;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .download-button {
+            display: inline-block;
+            text-decoration: none;
+            margin-top: 1rem;
+        }
+
+        .download-button button {
+            background-color: var(--success-color);
+        }
+
+        .download-button button:hover {
+            background-color: #047857;
+        }
+
+        .result-section {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            textarea {
+                min-height: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>JSON AI Transformer</h1>
+        
+        <div class="section upload-section">
+            <h2>Upload JSON File</h2>
+            <form method="post" enctype="multipart/form-data">
+                <div class="file-input-wrapper">
+                    <label class="file-input-label">
+                        <input type="file" name="json_file" accept=".json" required onchange="updateFileName(this)">
+                        Choose File
+                    </label>
+                    <div class="selected-file" id="selectedFile">No file chosen</div>
+                </div>
+                <button type="submit">Upload</button>
+            </form>
+        </div>
+
+        {% if fields %}
+            <div class="section">
+                <h3>Detected Fields</h3>
+                <ul class="fields-list">
+                    {% for field in fields %}
+                        <li>{{ field }}</li>
+                    {% endfor %}
+                </ul>
+
+                <h3>JSON Preview</h3>
+                <div class="preview-section">
+                    <pre>{{ preview | tojson(indent=2) }}</pre>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Enter Transformation Prompt</h2>
+                <form method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="json_file" value="{{ request.files.get('json_file').filename if request.files.get('json_file') else '' }}">
+                    <textarea name="prompt" placeholder="e.g. Remove country code from phone number" required></textarea>
+                    <button type="submit">Transform JSON</button>
+                </form>
+            </div>
+        {% endif %}
+
+        {% if code %}
+            <div class="result-section">
+                <a href="/download" class="download-button">
+                    <button>Download Transformed JSON</button>
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        function updateFileName(input) {
+            const fileName = input.files[0]?.name || 'No file chosen';
+            document.getElementById('selectedFile').textContent = fileName;
+        }
+    </script>
+</body>
+</html>
