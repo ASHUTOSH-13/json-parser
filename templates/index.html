@@ -10,6 +10,7 @@
             --text-color: #1e293b;
             --border-color: #e2e8f0;
             --success-color: #059669;
+            --error-color: #dc2626;
         }
 
         * {
@@ -161,6 +162,17 @@
             margin-top: 2rem;
         }
 
+        .error-message {
+            background-color: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #dc2626;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: 500;
+        }
+
         @media (max-width: 768px) {
             body {
                 padding: 1rem;
@@ -179,6 +191,12 @@
 <body>
     <div class="container">
         <h1>JSON AI Transformer</h1>
+        
+        {% if error %}
+        <div class="error-message">
+            {{ error }}
+        </div>
+        {% endif %}
         
         <div class="section upload-section">
             <h2>Upload JSON File</h2>
