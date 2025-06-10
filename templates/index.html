@@ -173,6 +173,74 @@
             font-weight: 500;
         }
 
+        .history-section {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: white;
+        }
+
+        .history-item {
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            background: var(--background-color);
+        }
+
+        .history-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .history-item h4 {
+            margin: 0 0 0.5rem 0;
+            color: var(--text-color);
+        }
+
+        .history-item p {
+            margin: 0.25rem 0;
+            font-size: 0.9rem;
+        }
+
+        .history-item .timestamp {
+            color: #666;
+            font-size: 0.8rem;
+        }
+
+        .history-item .status {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-success {
+            background-color: #ecfdf5;
+            color: var(--success-color);
+        }
+
+        .status-error {
+            background-color: #fee2e2;
+            color: var(--error-color);
+        }
+
+        .reapply-button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .reapply-button:hover {
+            background-color: #1e3a8a;
+        }
+
         @media (max-width: 768px) {
             body {
                 padding: 1rem;
@@ -244,12 +312,47 @@
                 </a>
             </div>
         {% endif %}
+
+        {% if history %}
+            <div class="history-section">
+                <h2>Transformation History</h2>
+                {% for item in history %}
+                    <div class="history-item">
+                        <h4>{{ item.prompt }}</h4>
+                        <p class="timestamp">{{ item.created_at }}</p>
+                        <span class="status status-{{ item.status }}">{{ item.status }}</span>
+                        {% if item.error_message %}
+                            <p class="error-message">{{ item.error_message }}</p>
+                        {% endif %}
+                        <button class="reapply-button" onclick="reapplyTransformation({{ item.id }})">Reapply Transformation</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
     </div>
 
     <script>
         function updateFileName(input) {
             const fileName = input.files[0]?.name || 'No file chosen';
             document.getElementById('selectedFile').textContent = fileName;
+        }
+
+        async function reapplyTransformation(id) {
+            try {
+                const response = await fetch(`/history/${id}/reapply`, {
+                    method: 'POST',
+                });
+                const result = await response.json();
+                
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert(result.error || 'Failed to reapply transformation');
+                }
+            } catch (error) {
+                alert('Error reapplying transformation');
+                console.error('Error:', error);
+            }
         }
     </script>
 </body>

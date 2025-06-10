@@ -1,6 +1,7 @@
 {
   "contact_details": {
     "address": {
+      "city": "Mumbai",
       "country": "India",
       "postal_code": "400001",
       "state": "Maharashtra",
@@ -8,6 +9,7 @@
     },
     "email": "neha.verma93@gmail.com",
     "phone_number": {
+      "country_code": "+91",
       "number": "9876543210"
     }
   },
@@ -15,6 +17,7 @@
     {
       "name": "Ravi Verma",
       "phone": {
+        "country_code": "+91",
         "number": "9123456789"
       },
       "relationship": "Brother"
@@ -22,6 +25,7 @@
     {
       "name": "Anita Verma",
       "phone": {
+        "country_code": "+91",
         "number": "9988776655"
       },
       "relationship": "Mother"
@@ -31,7 +35,6 @@
     "date_of_birth": "1993-08-12",
     "first_name": "Neha",
     "gender": "female",
-    "last_name": "Verma",
-    "middle_name": "Raj"
+    "last_name": "Verma"
   }
 }

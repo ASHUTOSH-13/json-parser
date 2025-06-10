@@ -8,6 +8,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     curl \
+    sqlite3 \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user
@@ -25,6 +26,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY . .
+
+# Create SQLite database directory with proper permissions
+RUN mkdir -p /app/instance && \
+    chown -R appuser:appuser /app/instance && \
+    chmod 755 /app/instance
 
 # Set proper permissions
 RUN chown -R appuser:appuser /app
