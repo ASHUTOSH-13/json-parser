@@ -5,6 +5,10 @@ import json
 
 def apply_transformation(data, code):
     try:
+        # Check if the code is a validation message (starts with #)
+        if code.strip().startswith('#'):
+            return {"error": code.strip()[2:]}  # Remove the # and space
+
         # Debug: Print the incoming data type and code
         print(f"Data type: {type(data)}")
         print(f"Data content: {json.dumps(data, indent=2)}")

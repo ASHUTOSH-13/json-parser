@@ -9,7 +9,53 @@ load_dotenv()
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
 
+def validate_transformation_prompt(prompt, json_data):
+    """
+    Validates if the prompt is related to JSON transformation.
+    Returns (is_valid, message) tuple.
+    """
+    # First, check if prompt is too short or just a question
+    if len(prompt.strip()) < 10:
+        return False, "Prompt is too short. Please provide a detailed transformation instruction."
+    
+    if prompt.strip().endswith('?'):
+        return False, "This appears to be a question rather than a transformation instruction. Please provide a transformation instruction for the JSON data."
+
+    # Ask LLM to validate if the prompt is about JSON transformation
+    validation_prompt = f"""
+You are a JSON transformation validator. Determine if the following prompt is requesting a valid JSON data transformation.
+The JSON data structure is: {json.dumps(json_data if not isinstance(json_data, list) else json_data[0], indent=2)}
+
+Prompt: "{prompt}"
+
+Only respond with either:
+VALID: If the prompt is asking for JSON data transformation/modification
+INVALID: If the prompt is a general question or unrelated to JSON transformation
+
+Provide your one-word response (VALID or INVALID) followed by a brief explanation.
+"""
+
+    validation_response = client.chat.completions.create(
+        messages=[{"role": "user", "content": validation_prompt}],
+        model="llama-3.3-70b-versatile",
+        max_tokens=50  # Limiting response size for efficiency
+    )
+
+    response_text = validation_response.choices[0].message.content.strip()
+    is_valid = response_text.upper().startswith('VALID')
+    
+    # Extract explanation (everything after the first colon)
+    explanation = response_text.split(':', 1)[1].strip() if ':' in response_text else "Invalid transformation prompt."
+    
+    return is_valid, explanation
+
+
 def generate_transformation_code(prompt, json_data):
+    # First validate the prompt
+    is_valid, message = validate_transformation_prompt(prompt, json_data)
+    if not is_valid:
+        return f"# {message}"  # Return comment with explanation
+
     # Convert single object to list for preview
     if not isinstance(json_data, list):
         preview_data = json.dumps(json_data, indent=2)
