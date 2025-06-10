@@ -1,0 +1,41 @@
+{
+    "user_profile": {
+        "first_name": "Neha",
+        "middle_name": "Raj",
+        "last_name": "Verma",
+        "date_of_birth": "1993-08-12",
+        "gender": "female"
+    },
+    "contact_details": {
+        "email": "neha.verma93@gmail.com",
+        "phone_number": {
+            "country_code": "+91",
+            "number": "9876543210"
+        },
+        "address": {
+            "street": "123 Green Park",
+            "city": "Mumbai",
+            "state": "Maharashtra",
+            "postal_code": "400001",
+            "country": "India"
+        }
+    },
+    "emergency_contacts": [
+        {
+            "name": "Ravi Verma",
+            "relationship": "Brother",
+            "phone": {
+                "country_code": "+91",
+                "number": "9123456789"
+            }
+        },
+        {
+            "name": "Anita Verma",
+            "relationship": "Mother",
+            "phone": {
+                "country_code": "+91",
+                "number": "9988776655"
+            }
+        }
+    ]
+}
