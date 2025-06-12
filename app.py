@@ -25,6 +25,9 @@ os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 # Initialize database
 with app.app_context():
     db.create_all()
+    # Clear transformation history on server start
+    db.session.query(TransformationHistory).delete()
+    db.session.commit()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
