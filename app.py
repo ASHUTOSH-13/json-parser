@@ -9,19 +9,20 @@ from models import db, TransformationHistory
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = 'supersecret'  # Required for sessions
+app.secret_key = 'supersecret'
 
-# Database configuration
+# Configure database
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///transformations.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
+# Create folders for uploads and outputs
 UPLOAD_FOLDER = 'uploads'
 OUTPUT_FOLDER = 'outputs'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
-# Create database tables
+# Initialize database
 with app.app_context():
     db.create_all()
 
@@ -34,7 +35,6 @@ def index():
     code = ""
     history = []
 
-    # Get transformation history
     if request.method == 'GET':
         history = TransformationHistory.query.order_by(TransformationHistory.created_at.desc()).limit(5).all()
         history = [h.to_dict() for h in history]
@@ -42,30 +42,43 @@ def index():
     if request.method == 'POST':
         file = request.files.get('json_file')
         prompt = request.form.get('prompt')
+        uploaded_filename = None
 
+        # If a new file is uploaded, save it and update session
         if file and file.filename.endswith('.json'):
             filepath = os.path.join(UPLOAD_FOLDER, file.filename)
             file.save(filepath)
-
+            uploaded_filename = file.filename
             with open(filepath, 'r') as f:
                 original_data = json.load(f)
                 session['data'] = original_data
+                session['filename'] = uploaded_filename
+        else:
+            # If no new file, try to get filename from hidden field
+            uploaded_filename = request.form.get('uploaded_filename')
+            if uploaded_filename:
+                filepath = os.path.join(UPLOAD_FOLDER, uploaded_filename)
+                if os.path.exists(filepath):
+                    with open(filepath, 'r') as f:
+                        original_data = json.load(f)
+                        session['data'] = original_data
+                        session['filename'] = uploaded_filename
 
         data_to_use = session.get('data')
 
         if data_to_use:
-            if isinstance(data_to_use, list):
+            # Safe preview
+            if isinstance(data_to_use, list) and data_to_use:
                 preview = data_to_use[:2]
-            else:
+                fields = list(preview[0].keys())
+            elif isinstance(data_to_use, dict):
                 preview = [data_to_use]
-            
-            fields = list(preview[0].keys()) if preview else []
+                fields = list(data_to_use.keys())
 
             if prompt:
                 code = generate_transformation_code(prompt, data_to_use)
                 transformed_result = apply_transformation(data_to_use, code)
-                
-                # Create history entry
+
                 history_entry = TransformationHistory(
                     original_data=data_to_use,
                     prompt=prompt,
@@ -84,31 +97,34 @@ def index():
                     with open(output_path, 'w') as out_f:
                         json.dump(transformed_data, out_f, indent=2)
 
-                    if isinstance(transformed_data, list):
+                    if isinstance(transformed_data, list) and transformed_data:
                         preview = transformed_data[:2]
-                    else:
+                        fields = list(preview[0].keys())
+                    elif isinstance(transformed_data, dict):
                         preview = [transformed_data]
-                    fields = list(preview[0].keys()) if preview else []
+                        fields = list(transformed_data.keys())
                     session['data'] = transformed_data
 
-                # Save history entry
                 db.session.add(history_entry)
                 db.session.commit()
 
-                # Update history list
                 history = TransformationHistory.query.order_by(TransformationHistory.created_at.desc()).limit(5).all()
                 history = [h.to_dict() for h in history]
 
-    return render_template('index.html', 
-                         fields=fields, 
-                         preview=preview, 
-                         code=code, 
-                         error=transformed_data.get('error') if isinstance(transformed_data, dict) and 'error' in transformed_data else None,
-                         history=history)
+    return render_template(
+        'index.html',
+        fields=fields,
+        preview=preview,
+        code=code,
+        error=transformed_data.get('error') if isinstance(transformed_data, dict) and 'error' in transformed_data else None,
+        history=history
+    )
 
 @app.route('/download')
 def download():
     path = os.path.join(OUTPUT_FOLDER, 'transformed.json')
+    if not os.path.exists(path):
+        return "No transformed file available.", 404
     return send_file(path, as_attachment=True)
 
 @app.route('/history')
@@ -119,19 +135,26 @@ def get_history():
 @app.route('/history/<int:id>/reapply', methods=['POST'])
 def reapply_transformation(id):
     history_entry = TransformationHistory.query.get_or_404(id)
-    
-    # Apply the saved transformation
-    transformed_result = apply_transformation(history_entry.original_data, history_entry.transformation_code)
-    
+    current_data = session.get('data')
+
+    if not current_data:
+        return jsonify({'error': 'No current uploaded data found in session.'}), 400
+
+    transformed_result = apply_transformation(current_data, history_entry.transformation_code)
+
     if isinstance(transformed_result, dict) and 'error' in transformed_result:
         return jsonify({'error': transformed_result['error']}), 400
-    
-    # Save the result
+
     output_path = os.path.join(OUTPUT_FOLDER, 'transformed.json')
     with open(output_path, 'w') as out_f:
         json.dump(transformed_result, out_f, indent=2)
-    
-    return jsonify({'message': 'Transformation reapplied successfully', 'data': transformed_result})
+
+    session['data'] = transformed_result
+
+    return jsonify({
+        'message': 'Transformation reapplied successfully on uploaded JSON',
+        'data': transformed_result
+    })
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
