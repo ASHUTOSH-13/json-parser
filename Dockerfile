@@ -32,8 +32,9 @@ RUN mkdir -p /app/instance && \
     chown -R appuser:appuser /app/instance && \
     chmod 755 /app/instance
 
-# Set proper permissions
-RUN chown -R appuser:appuser /app
+# Set proper permissions for all files
+RUN chown -R appuser:appuser /app && \
+    chmod -R 755 /app
 
 # Switch to non-root user
 USER appuser

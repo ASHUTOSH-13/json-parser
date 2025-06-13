@@ -1,10 +1,11 @@
-from flask import Flask, request, render_template, send_file, session, jsonify
+from flask import Flask, request, render_template, send_file, session, jsonify, send_from_directory
 import os
 import json
 from ai_engine import generate_transformation_code
 from executor import apply_transformation
 from dotenv import load_dotenv
 from models import db, TransformationHistory
+from csv_logger import CSVLogger
 
 load_dotenv()
 
@@ -21,6 +22,9 @@ UPLOAD_FOLDER = 'uploads'
 OUTPUT_FOLDER = 'outputs'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+
+# Initialize CSV logger
+csv_logger = CSVLogger(os.path.join(OUTPUT_FOLDER, 'transformation_logs.csv'))
 
 # Initialize database
 with app.app_context():
@@ -88,7 +92,19 @@ def index():
                     transformation_code=code
                 )
 
-                if isinstance(transformed_result, dict) and 'error' in transformed_result:
+                success = not (isinstance(transformed_result, dict) and 'error' in transformed_result)
+                
+                # Log to CSV
+                csv_logger.log_transformation(
+                    user_query=prompt,
+                    input_prompt=prompt,
+                    input_json=data_to_use,
+                    generated_code=code,
+                    transformed_output=transformed_result,
+                    success_flag=success
+                )
+
+                if not success:
                     transformed_data = transformed_result
                     history_entry.status = 'error'
                     history_entry.error_message = transformed_result['error']
@@ -158,6 +174,14 @@ def reapply_transformation(id):
         'message': 'Transformation reapplied successfully on uploaded JSON',
         'data': transformed_result
     })
+
+@app.route('/download/<filename>')
+def download_file(filename):
+    return send_from_directory(OUTPUT_FOLDER, filename, as_attachment=True)
+
+@app.route('/download-logs')
+def download_logs():
+    return send_from_directory(OUTPUT_FOLDER, 'transformation_logs.csv', as_attachment=True)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

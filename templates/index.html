@@ -175,10 +175,33 @@
 
         .history-section {
             margin-top: 2rem;
-            padding: 1.5rem;
-            border: 1px solid var(--border-color);
+            padding: 1rem;
+            background: #f8f9fa;
             border-radius: 8px;
-            background: white;
+        }
+
+        .history-actions {
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .history-list {
+            list-style: none;
+            padding: 0;
         }
 
         .history-item {
@@ -315,18 +338,23 @@
 
         {% if history %}
             <div class="history-section">
-                <h2>Transformation History</h2>
-                {% for item in history %}
-                    <div class="history-item">
-                        <h4>{{ item.prompt }}</h4>
-                        <p class="timestamp">{{ item.created_at }}</p>
-                        <span class="status status-{{ item.status }}">{{ item.status }}</span>
-                        {% if item.error_message %}
-                            <p class="error-message">{{ item.error_message }}</p>
-                        {% endif %}
-                        <button class="reapply-button" onclick="reapplyTransformation({{ item.id }})">Reapply Transformation</button>
-                    </div>
-                {% endfor %}
+                <h3>Transformation History</h3>
+                <div class="history-actions">
+                    <a href="{{ url_for('download_logs') }}" class="btn btn-secondary">Download Logs</a>
+                </div>
+                <div class="history-list">
+                    {% for item in history %}
+                        <div class="history-item">
+                            <h4>{{ item.prompt }}</h4>
+                            <p class="timestamp">{{ item.created_at }}</p>
+                            <span class="status status-{{ item.status }}">{{ item.status }}</span>
+                            {% if item.error_message %}
+                                <p class="error-message">{{ item.error_message }}</p>
+                            {% endif %}
+                            <button class="reapply-button" onclick="reapplyTransformation({{ item.id }})">Reapply Transformation</button>
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
         {% endif %}
     </div>
